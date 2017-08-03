@@ -1,0 +1,469 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../tag-manager.html">
+</head>
+
+<body>
+  <test-fixture id="tag-manager-fixture">
+    <template>
+      <tag-manager></tag-manager>
+    </template>
+  </test-fixture>
+
+  <script>
+    /* globals suite, test, expect, setup, fixture, flush */
+    /* jshint -W030 */
+    suite('<tag-manager> default unit tests', function() {
+      var element;
+
+      setup(function(done) {
+        element = fixture('tag-manager-fixture');
+        flush(done);
+      });
+
+      test('properties are set as expected', function() {
+        expect(element.authPassword).to.not.exist;
+        expect(element.authUsername).to.not.exist;
+        expect(element.entityEndpoint).to.not.exist;
+        expect(element.entityRequestTransform).to.be.a('Function');
+        expect(element.error).to.not.exist;
+        expect(element.extractionEndpoint).to.not.exist;
+        expect(element.extractionRequestTransform).to.be.a('Function');
+        expect(element.listEndpoint).to.not.exist;
+        expect(element.loading).to.be.false;
+        expect(element.project).to.not.exist;
+        expect(element.show).to.be.false;
+        expect(element.tag).to.not.exist;
+        expect(element.tagList).to.deep.equal([]);
+        expect(element.tagManager).to.be.an('Object');
+        expect(element._data).to.deep.equal({});
+        expect(element._headers).to.deep.equal({});
+        expect(element._listeners).to.deep.equal({});
+        expect(element._listResponse).to.not.exist;
+        expect(element._nextListenerId).to.equal(1);
+        expect(element._updateResponse).to.not.exist;
+      });
+
+      test('does have two iron-ajax elements', function() {
+        var ajax = Polymer.dom(element.root).querySelectorAll('iron-ajax');
+
+        expect(ajax[0]).to.exist;
+        expect(ajax[0].auto).to.exist;
+        expect(ajax[0].handleAs).to.equal('json');
+        expect(ajax[0].headers).to.deep.equal({});
+        expect(ajax[0].url).to.not.exist;
+        expect(ajax[0].withCredentials).to.be.false;
+
+        expect(ajax[1]).to.exist;
+        expect(ajax[1].auto).to.be.false;
+        expect(ajax[1].body).to.not.exist;
+        expect(ajax[1].contentType).to.equal('application/json');
+        expect(ajax[1].headers).to.deep.equal({});
+        expect(ajax[1].lastError).to.not.exist;
+        expect(ajax[1].lastResponse).to.not.exist;
+        expect(ajax[1].loading).to.not.exist;
+        expect(ajax[1].method).to.not.exist;
+        expect(ajax[1].url).to.not.exist;
+      });
+
+      test('setting properties does update the attributes in the iron-ajax elements', function(done) {
+        element.authUsername = 'myUser';
+        element.authPassword = 'myPassword';
+
+        element.listEndpoint = 'myListEndpoint/PROJECT';
+        element.project = 'myProject';
+
+        element._data = {
+          body: {
+            key: 'value'
+          },
+          method: 'POST',
+          url: 'url'
+        };
+
+        flush(function() {
+          var ajax = Polymer.dom(element.root).querySelectorAll('iron-ajax');
+
+          expect(ajax[0].headers).to.deep.equal({
+            'Authorization': 'Basic bXlVc2VyOm15UGFzc3dvcmQ='
+          });
+          expect(ajax[0].url).to.equal('myListEndpoint/myProject');
+          expect(ajax[0].withCredentials).to.exist;
+
+          expect(ajax[1].auto).to.exist;
+          expect(ajax[1].body).to.deep.equal({
+            key: 'value'
+          });
+          expect(ajax[1].headers).to.deep.equal({
+            'Authorization': 'Basic bXlVc2VyOm15UGFzc3dvcmQ='
+          });
+          expect(ajax[1].method).to.equal('POST');
+          expect(ajax[1].url).to.equal('url');
+
+          done();
+        });
+      });
+
+      test('does have a styled-dialog element', function() {
+        expect(element.$$('styled-dialog')).to.exist;
+        expect(element.$$('styled-dialog').id).to.equal('tagsDialog');
+        expect(element.$$('styled-dialog').header).to.equal('Tag List');
+        expect(element.$$('styled-dialog').opened).to.be.false;
+      });
+
+      test('does not have a paper-dropdown-menu, paper-listbox, or paper-item if tagList is empty', function() {
+        expect(element.$$('paper-dropdown-menu')).to.not.exist;
+        expect(element.$$('paper-listbox')).to.not.exist;
+        expect(element.$$('paper-item')).to.not.exist;
+      });
+
+      test('does have a paper-dropdown-menu, paper-listbox, and paper-item if tagList is not empty', function(done) {
+        element.tagList = ['a', 'b', 'c', 'd'];
+        element.tag = 'a';
+        flush(function() {
+          expect(element.$$('paper-dropdown-menu')).to.exist;
+          expect(element.$$('paper-listbox')).to.exist;
+          expect(element.$$('paper-listbox').classList.contains('dropdown-content')).to.be.true;
+          expect(element.$$('paper-listbox').selected).to.equal('a');
+          var item = Polymer.dom(element.root).querySelectorAll('paper-item');
+          expect(item[0]).to.exist;
+          expect(item[0].id).to.equal('a');
+          expect(item[0].value).to.equal('a');
+          expect(item[1]).to.exist;
+          expect(item[1].id).to.equal('b');
+          expect(item[1].value).to.equal('b');
+          expect(item[2]).to.exist;
+          expect(item[2].id).to.equal('c');
+          expect(item[2].value).to.equal('c');
+          expect(item[3]).to.exist;
+          expect(item[3].id).to.equal('d');
+          expect(item[3].value).to.equal('d');
+          done();
+        });
+      });
+
+      test('entityRequestTransform does return as expected', function() {
+        expect(element.entityRequestTransform()).to.deep.equal({});
+        expect(element.entityRequestTransform('positive', 'id1')).to.deep.equal({
+          'human_annotation': 1,
+          'kg_id': 'id1'
+        });
+        expect(element.entityRequestTransform('negative', 'id2')).to.deep.equal({
+          'human_annotation': 0,
+          'kg_id': 'id2'
+        });
+      });
+
+      test('extractionRequestTransform does return as expected', function() {
+        expect(element.extractionRequestTransform()).to.deep.equal({});
+        expect(element.extractionRequestTransform('positive', 'unused', 'unused', 'unused', 'key1')).to.deep.equal({
+          'human_annotation': 1,
+          'key': 'key1'
+        });
+        expect(element.extractionRequestTransform('negative', 'unused', 'unused', 'unused', 'key2')).to.deep.equal({
+          'human_annotation': 0,
+          'key': 'key2'
+        });
+      });
+
+      test('tagManager does have expected properties', function() {
+        expect(element.tagManager.addListener).to.be.a('Function');
+        expect(element.tagManager.removeListener).to.be.a('Function');
+        expect(element.tagManager.setEntityTag).to.be.a('Function');
+        expect(element.tagManager.setExtractionTag).to.be.a('Function');
+      });
+
+      test('tagManager.addListener does work as expected', function(done) {
+        var called = false;
+
+        var tagsListener = function(tag) {
+          called = true;
+          expect(tag).to.not.exist;
+        };
+
+        var showListener = function(show) {
+          expect(called).to.be.true;
+          expect(show).to.be.false;
+          expect(element._listeners[1].show).to.deep.equal(showListener);
+          expect(element._listeners[1].tags).to.deep.equal(tagsListener);
+          expect(element._nextListenerId).to.equal(2);
+          done();
+        };
+
+        element.tagManager.addListener(showListener, tagsListener);
+      });
+
+      test('tagManager.addListener does work as expected with existing listener', function(done) {
+        element._listeners[1] = {};
+        element._nextListenerId++;
+
+        var called = false;
+
+        var tagsListener = function(tag) {
+          called = true;
+          expect(tag).to.not.exist;
+        };
+
+        var showListener = function(show) {
+          expect(called).to.be.true;
+          expect(show).to.be.false;
+          expect(element._listeners[1]).to.be.an('Object');
+          expect(element._listeners[2].show).to.deep.equal(showListener);
+          expect(element._listeners[2].tags).to.deep.equal(tagsListener);
+          expect(element._nextListenerId).to.equal(3);
+          done();
+        };
+
+        element.tagManager.addListener(showListener, tagsListener);
+      });
+
+      test('tagManager.addListener does work as expected if tag is not blank', function(done) {
+        element.tag = 'testFlag';
+
+        var called = false;
+
+        var tagsListener = function(tag) {
+          called = true;
+          expect(tag).to.equal('testFlag');
+        };
+
+        var showListener = function(show) {
+          expect(called).to.be.true;
+          expect(show).to.be.false;
+          expect(element._listeners[1].show).to.deep.equal(showListener);
+          expect(element._listeners[1].tags).to.deep.equal(tagsListener);
+          expect(element._nextListenerId).to.equal(2);
+          done();
+        };
+
+        element.tagManager.addListener(showListener, tagsListener);
+      });
+
+      test('tagManager.addListener does work as expected if show is true', function(done) {
+        element.show = true;
+
+        var called = false;
+
+        var tagsListener = function(tag) {
+          called = true;
+          expect(tag).to.not.exist;
+        };
+
+        var showListener = function(show) {
+          expect(called).to.be.true;
+          expect(show).to.be.true;
+          expect(element._listeners[1].show).to.deep.equal(showListener);
+          expect(element._listeners[1].tags).to.deep.equal(tagsListener);
+          expect(element._nextListenerId).to.equal(2);
+          done();
+        };
+
+        element.tagManager.addListener(showListener, tagsListener);
+      });
+
+      test('tagManager.removeListener does work as expected', function() {
+        element._listeners[1] = function() {};
+        element._listeners[2] = function() {};
+        element.tagManager.removeListener(1);
+        expect(element._listeners[1]).to.not.exist;
+        expect(element._listeners[2]).to.exist;
+      });
+
+      test('tagManager.setEntityTag does not set _data if entityEndpoint is undefined', function() {
+        element.tagManager.setEntityTag('positive', 'myId', 'myType', 'myTag');
+        expect(element._data).to.deep.equal({});
+      });
+
+      test('tagManager.setEntityTag does set _data as expected if tag is positive', function() {
+        element.project = 'myProject';
+        element.entityEndpoint = 'tag/entity/ENTITY_ID/ENTITY_TYPE/PROJECT/TAG';
+        element.tagManager.setEntityTag('positive', 'myId', 'myType', 'myTag');
+        expect(element._data).to.deep.equal({
+          body: {
+            'kg_id': 'myId',
+            'human_annotation': 1
+          },
+          method: 'POST',
+          url: 'tag/entity/myId/myType/myProject/myTag'
+        });
+      });
+
+      test('tagManager.setEntityTag does set _data as expected if tag is negative', function() {
+        element.project = 'myProject';
+        element.entityEndpoint = 'tag/entity/ENTITY_ID/ENTITY_TYPE/PROJECT/TAG';
+        element.tagManager.setEntityTag('negative', 'myId', 'myType', 'myTag');
+        expect(element._data).to.deep.equal({
+          body: {
+            'kg_id': 'myId',
+            'human_annotation': 0
+          },
+          method: 'POST',
+          url: 'tag/entity/myId/myType/myProject/myTag'
+        });
+      });
+
+      test('tagManager.setEntityTag does set _data as expected if tag is reset', function() {
+        element.project = 'myProject';
+        element.entityEndpoint = 'tag/entity/ENTITY_ID/ENTITY_TYPE/PROJECT/TAG';
+        element.tagManager.setEntityTag('', 'myId', 'myType', 'myTag');
+        expect(element._data).to.deep.equal({
+          body: {},
+          method: 'DELETE',
+          url: 'tag/entity/myId/myType/myProject/myTag'
+        });
+      });
+
+      test('tagManager.setExtractionTag does not set _data if extractionEndpoint is undefined', function() {
+        element.tagManager.setExtractionTag('positive', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        expect(element._data).to.deep.equal({});
+      });
+
+      test('tagManager.setExtractionTag does set _data as expected if tag is positive', function() {
+        element.project = 'myProject';
+        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT/TAG';
+        element.tagManager.setExtractionTag('positive', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        expect(element._data).to.deep.equal({
+          body: {
+            'key': 'myExtractionKey',
+            'human_annotation': 1
+          },
+          method: 'POST',
+          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject/myTag'
+        });
+      });
+
+      test('tagManager.setExtractionTag does set _data as expected if tag is negative', function() {
+        element.project = 'myProject';
+        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT/TAG';
+        element.tagManager.setExtractionTag('negative', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        expect(element._data).to.deep.equal({
+          body: {
+            'key': 'myExtractionKey',
+            'human_annotation': 0
+          },
+          method: 'POST',
+          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject/myTag'
+        });
+      });
+
+      test('tagManager.setExtractionTag does set _data as expected if tag is reset', function() {
+        element.project = 'myProject';
+        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT/TAG';
+        element.tagManager.setExtractionTag('', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        expect(element._data).to.deep.equal({
+          body: {},
+          method: 'DELETE',
+          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject/myTag'
+        });
+      });
+
+      test('_createHeaders does return as expected', function() {
+        expect(element._createHeaders()).to.deep.equal({});
+        expect(element._createHeaders('myUser')).to.deep.equal({});
+        expect(element._createHeaders(undefined, 'myPassword')).to.deep.equal({});
+        expect(element._createHeaders('myUser', 'myPassword')).to.deep.equal({
+          'Authorization': 'Basic bXlVc2VyOm15UGFzc3dvcmQ='
+        });
+      });
+
+      test('_exists does return as expected', function() {
+        expect(element._exists()).to.be.false;
+        expect(element._exists('a')).to.be.false;
+        expect(element._exists(undefined, 'b')).to.be.false;
+        expect(element._exists('a', 'b')).to.be.true;
+        expect(element._exists(true, 1)).to.be.true;
+        expect(element._exists(['a'], {})).to.be.true;
+      });
+
+      test('_getCheckboxIcon does return as expected', function() {
+        expect(element._getCheckboxIcon(true)).to.equal('check-box');
+        expect(element._getCheckboxIcon(false)).to.equal('check-box-outline-blank');
+      });
+
+      test('_getListEndpoint does return as expected', function() {
+        expect(element._getListEndpoint('myHost/myEndpoint', 'myProject')).to.equal('myHost/myEndpoint');
+        expect(element._getListEndpoint('myHost/PROJECT/myEndpoint', 'myProject')).to.equal('myHost/myProject/myEndpoint');
+      });
+
+      test('_notifyShowListeners is called if show is set', function(done) {
+        element._listeners[1] = {
+          show: function(show) {
+            expect(show).to.be.true;
+            done();
+          }
+        };
+
+        element.show = true;
+      });
+
+      test('_notifyTagsListeners is called if tag is set', function(done) {
+        element._listeners[1] = {
+          tags: function(tag) {
+            expect(tag).to.equal('myTag');
+            done();
+          }
+        };
+
+        element.tag = 'myTag';
+      });
+
+      test('_toggleShowTags does toggle show', function() {
+        expect(element.show).to.be.false;
+        element._toggleShowTags();
+        expect(element.show).to.be.true;
+        element._toggleShowTags();
+        expect(element.show).to.be.false;
+      });
+
+      test('_updateTagsList does set tagList', function() {
+        element._updateTagsList({
+          a: 'string',
+          b: true,
+          c: [],
+          d: {}
+        });
+        expect(element.tagList).to.deep.equal(['a', 'b', 'c', 'd']);
+      });
+
+      test('setting _listResponse does set tagList', function() {
+        element._listResponse = {
+          w: 'string',
+          x: true,
+          y: [],
+          z: {}
+        };
+        expect(element.tagList).to.deep.equal(['w', 'x', 'y', 'z']);
+      });
+
+      test('openDialog does open the dialog', function(done) {
+        expect(element.$$('styled-dialog').opened).to.be.false;
+        element.openDialog();
+        flush(function() {
+          expect(element.$$('styled-dialog').opened).to.be.true;
+          done();
+        });
+      });
+    });
+  </script>
+</body>
+</html>
