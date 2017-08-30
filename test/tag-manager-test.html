@@ -143,7 +143,7 @@ limitations under the License.
         flush(function() {
           expect(element.$$('paper-dropdown-menu')).to.exist;
           expect(element.$$('paper-listbox')).to.exist;
-          expect(element.$$('paper-listbox').classList.contains('dropdown-content')).to.be.true;
+          expect(element.$$('paper-listbox').slot).to.equal('dropdown-content');
           expect(element.$$('paper-listbox').selected).to.equal('a');
           var item = Polymer.dom(element.root).querySelectorAll('paper-item');
           expect(item[0]).to.exist;
@@ -164,25 +164,75 @@ limitations under the License.
 
       test('entityRequestTransform does return as expected', function() {
         expect(element.entityRequestTransform()).to.deep.equal({});
+        expect(element.entityRequestTransform('')).to.deep.equal({});
         expect(element.entityRequestTransform('positive', 'id1')).to.deep.equal({
           'human_annotation': 1,
           'kg_id': 'id1'
         });
-        expect(element.entityRequestTransform('negative', 'id2')).to.deep.equal({
-          'human_annotation': 0,
+        expect(element.entityRequestTransform('Positive', 'id2')).to.deep.equal({
+          'human_annotation': 1,
           'kg_id': 'id2'
+        });
+        expect(element.entityRequestTransform('1', 'id3')).to.deep.equal({
+          'human_annotation': 1,
+          'kg_id': 'id3'
+        });
+        expect(element.entityRequestTransform(1, 'id4')).to.deep.equal({
+          'human_annotation': 1,
+          'kg_id': 'id4'
+        });
+        expect(element.entityRequestTransform('negative', 'id5')).to.deep.equal({
+          'human_annotation': 0,
+          'kg_id': 'id5'
+        });
+        expect(element.entityRequestTransform('Negative', 'id6')).to.deep.equal({
+          'human_annotation': 0,
+          'kg_id': 'id6'
+        });
+        expect(element.entityRequestTransform('0', 'id7')).to.deep.equal({
+          'human_annotation': 0,
+          'kg_id': 'id7'
+        });
+        expect(element.entityRequestTransform(0, 'id8')).to.deep.equal({
+          'human_annotation': 0,
+          'kg_id': 'id8'
         });
       });
 
       test('extractionRequestTransform does return as expected', function() {
         expect(element.extractionRequestTransform()).to.deep.equal({});
+        expect(element.extractionRequestTransform('')).to.deep.equal({});
         expect(element.extractionRequestTransform('positive', 'unused', 'unused', 'unused', 'key1')).to.deep.equal({
           'human_annotation': 1,
           'key': 'key1'
         });
-        expect(element.extractionRequestTransform('negative', 'unused', 'unused', 'unused', 'key2')).to.deep.equal({
-          'human_annotation': 0,
+        expect(element.extractionRequestTransform('Positive', 'unused', 'unused', 'unused', 'key2')).to.deep.equal({
+          'human_annotation': 1,
           'key': 'key2'
+        });
+        expect(element.extractionRequestTransform('1', 'unused', 'unused', 'unused', 'key3')).to.deep.equal({
+          'human_annotation': 1,
+          'key': 'key3'
+        });
+        expect(element.extractionRequestTransform(1, 'unused', 'unused', 'unused', 'key4')).to.deep.equal({
+          'human_annotation': 1,
+          'key': 'key4'
+        });
+        expect(element.extractionRequestTransform('negative', 'unused', 'unused', 'unused', 'key5')).to.deep.equal({
+          'human_annotation': 0,
+          'key': 'key5'
+        });
+        expect(element.extractionRequestTransform('Negative', 'unused', 'unused', 'unused', 'key6')).to.deep.equal({
+          'human_annotation': 0,
+          'key': 'key6'
+        });
+        expect(element.extractionRequestTransform('0', 'unused', 'unused', 'unused', 'key7')).to.deep.equal({
+          'human_annotation': 0,
+          'key': 'key7'
+        });
+        expect(element.extractionRequestTransform(0, 'unused', 'unused', 'unused', 'key8')).to.deep.equal({
+          'human_annotation': 0,
+          'key': 'key8'
         });
       });
 
@@ -334,46 +384,46 @@ limitations under the License.
       });
 
       test('tagManager.setExtractionTag does not set _data if extractionEndpoint is undefined', function() {
-        element.tagManager.setExtractionTag('positive', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        element.tagManager.setExtractionTag('positive', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey');
         expect(element._data).to.deep.equal({});
       });
 
       test('tagManager.setExtractionTag does set _data as expected if tag is positive', function() {
         element.project = 'myProject';
-        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT/TAG';
-        element.tagManager.setExtractionTag('positive', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT';
+        element.tagManager.setExtractionTag('positive', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey');
         expect(element._data).to.deep.equal({
           body: {
             'key': 'myExtractionKey',
             'human_annotation': 1
           },
           method: 'POST',
-          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject/myTag'
+          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject'
         });
       });
 
       test('tagManager.setExtractionTag does set _data as expected if tag is negative', function() {
         element.project = 'myProject';
-        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT/TAG';
-        element.tagManager.setExtractionTag('negative', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT';
+        element.tagManager.setExtractionTag('negative', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey');
         expect(element._data).to.deep.equal({
           body: {
             'key': 'myExtractionKey',
             'human_annotation': 0
           },
           method: 'POST',
-          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject/myTag'
+          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject'
         });
       });
 
       test('tagManager.setExtractionTag does set _data as expected if tag is reset', function() {
         element.project = 'myProject';
-        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT/TAG';
-        element.tagManager.setExtractionTag('', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey', 'myTag');
+        element.extractionEndpoint = 'tag/extraction/ENTITY_ID/ENTITY_TYPE/EXTRACTION_FIELD/EXTRACTION_KEY/PROJECT';
+        element.tagManager.setExtractionTag('', 'myEntityId', 'myEntityType', 'myExtractionField', 'myExtractionKey');
         expect(element._data).to.deep.equal({
           body: {},
           method: 'DELETE',
-          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject/myTag'
+          url: 'tag/extraction/myEntityId/myEntityType/myExtractionField/myExtractionKey/myProject'
         });
       });
 

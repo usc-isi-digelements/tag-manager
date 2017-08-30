@@ -16,13 +16,16 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../lodash-import/lodash.html">
+<link rel="import" href="../neon-animation/web-animations.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../styled-dialog/styled-dialog.html">
+<link rel="import" href="../styled-dialog/styled-dialog-styles.html">
 
 <!--
 A Polymer Element that manages tags saved using ajax requests.
@@ -47,6 +50,9 @@ A Polymer Element that manages tags saved using ajax requests.
 
 <dom-module id="tag-manager">
   <template>
+    <style include="iron-flex iron-flex-alignment iron-flex-factors"></style>
+    <style include="styled-dialog-styles"></style>
+
     <style>
       :host {
         display: block;
@@ -97,8 +103,8 @@ A Polymer Element that manages tags saved using ajax requests.
 
     <styled-dialog id="tagsDialog" header="Tag List">
       <div class="layout horizontal pointer" title="Toggle Show Training Tags" on-tap="_toggleShowTags">
-        <iron-icon class="checkbox styled-dialog-right-space" icon$="[[_getCheckboxIcon(show)]]"></iron-icon>
-        <span class="styled-dialog-text">Show Training Tags</span>
+        <iron-icon class="checkbox styled-dialog-tall styled-dialog-right-space" icon$="[[_getCheckboxIcon(show)]]"></iron-icon>
+        <span class="styled-dialog-text styled-dialog-tall">Show Training Tags</span>
       </div>
 
       <div class="layout horizontal">
@@ -108,7 +114,7 @@ A Polymer Element that manages tags saved using ajax requests.
         <template is="dom-if" if="[[tagList.length]]">
           <span class="styled-dialog-name styled-dialog-tall styled-dialog-right-space">Training Focus Tag:</span>
           <paper-dropdown-menu label="Tag" no-label-float>
-            <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{tag}}">
+            <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{tag}}">
               <template is="dom-repeat" items="[[tagList]]">
                 <paper-item id$="[[item]]" value="[[item]]">[[item]]</paper-item>
               </template>
@@ -177,9 +183,9 @@ A Polymer Element that manages tags saved using ajax requests.
           type: Object,
           value: function() {
             return function(classification, entityId) {
-              return !classification ? {} : {
+              return (_.isUndefined(classification) || classification === '') ? {} : {
                 'kg_id': entityId,
-                'human_annotation': (classification === 'positive' ? 1 : 0)
+                'human_annotation': (classification === 1 || classification === '1' || ('' + classification).toLowerCase() === 'positive') ? 1 : 0
               };
             };
           }
@@ -206,7 +212,6 @@ A Polymer Element that manages tags saved using ajax requests.
          * - `ENTITY_TYPE`:  The entity type
          * - `EXTRACTION_KEY`:  The extraction key
          * - `EXTRACTION_FIELD`:  The extraction field
-         * - `TAG`:  The tag name
          *
          * @type {String}
          */
@@ -218,7 +223,7 @@ A Polymer Element that manages tags saved using ajax requests.
          * (Optional)
          *
          * The function to transform the extraction tag data into the ajax request body.  It accepts the following arguments:
-         * `classification`, `entityId`, `entityType`, `extractionField`, `extractionKey`, `project`, `tag`
+         * `classification`, `entityId`, `entityType`, `extractionField`, `extractionKey`, `project`
          *
          * @type {Object}
          */
@@ -226,9 +231,9 @@ A Polymer Element that manages tags saved using ajax requests.
           type: Object,
           value: function() {
             return function(classification, entityId, entityType, extractionField, extractionKey) {
-              return !classification ? {} : {
+              return (_.isUndefined(classification) || classification === '') ? {} : {
                 'key': extractionKey,
-                'human_annotation': (classification === 'positive' ? 1 : 0)
+                'human_annotation': (classification === 1 || classification === '1' || ('' + classification).toLowerCase() === 'positive') ? 1 : 0
               };
             };
           }
@@ -280,6 +285,7 @@ A Polymer Element that manages tags saved using ajax requests.
          * @default false
          */
         show: {
+          notify: true,
           observer: '_notifyShowListeners',
           type: Boolean,
           value: false
@@ -293,6 +299,7 @@ A Polymer Element that manages tags saved using ajax requests.
          * @type {String}
          */
         tag: {
+          notify: true,
           observer: '_notifyTagsListeners',
           type: String
         },
@@ -438,7 +445,7 @@ A Polymer Element that manages tags saved using ajax requests.
           },
 
           setEntityTag: function(classification, entityId, entityType, tag) {
-            if(self.entityEndpoint && self.entityRequestTransform && entityId) {
+            if(self.entityEndpoint && self.entityRequestTransform && entityId && tag) {
               self.set('_data', {
                 body: self.entityRequestTransform(classification, entityId, entityType, self.project, tag),
                 method: !classification ? 'DELETE' : 'POST',
@@ -451,10 +458,10 @@ A Polymer Element that manages tags saved using ajax requests.
             }
           },
 
-          setExtractionTag: function(classification, entityId, entityType, extractionField, extractionKey, tag) {
-            if(self.extractionEndpoint && extractionKey) {
+          setExtractionTag: function(classification, entityId, entityType, extractionField, extractionKey) {
+            if(self.extractionEndpoint && self.extractionRequestTransform && entityId && extractionKey) {
               self.set('_data', {
-                body: self.extractionRequestTransform(classification, entityId, entityType, extractionField, extractionKey, self.project, tag),
+                body: self.extractionRequestTransform(classification, entityId, entityType, extractionField, extractionKey, self.project),
                 method: !classification ? 'DELETE' : 'POST',
                 url: self.extractionEndpoint
                   .replace('ENTITY_ID', entityId)
@@ -462,7 +469,6 @@ A Polymer Element that manages tags saved using ajax requests.
                   .replace('EXTRACTION_FIELD', extractionField)
                   .replace('EXTRACTION_KEY', extractionKey)
                   .replace('PROJECT', self.project)
-                  .replace('TAG', tag)
               });
             }
           }
@@ -518,7 +524,7 @@ A Polymer Element that manages tags saved using ajax requests.
        * @private
        */
       _getListEndpoint: function(endpoint, project) {
-        return endpoint.replace('PROJECT', project);
+        return endpoint ? endpoint.replace('PROJECT', project) : undefined;
       },
 
       /**

@@ -18,13 +18,110 @@ limitations under the License.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
   <link rel="import" href="../tag-manager.html">
 </head>
 
 <body unresolved>
-  <template is="dom-bind" id="demo">
-    <p>TODO</p>
-  </template>
+  <style>
+    .add-margin {
+      margin-bottom: 10px;
+    }
+  </style>
+
+  <dom-bind id="demo">
+    <template is="dom-bind">
+      <div class="add-margin">Entity Endpoint:  <strong>http://localhost:1234/projects/PROJECT/entities/ENTITY_TYPE/ids/ENTITY_ID/tags/TAG</strong></div>
+      <div class="add-margin">Extraction Endpoint:  <strong>http://localhost:1234/projects/PROJECT/entities/ENTITY_TYPE/ids/ENTITY_ID/extractions/EXTRACTION_FIELD/keys/EXTRACTION_KEY</strong></div>
+      <div class="add-margin">Project:  <strong>myProject</strong></div>
+      <div class="add-margin">Show:  <strong>[[show]]</strong></div>
+      <div class="add-margin">Tag:  <strong>[[tag]]</strong></div>
+      <div class="add-margin">Tag List:  <strong>[[tagList]]</strong></div>
+      <div class="add-margin">Data Body:  <strong>[[body]]</strong></div>
+      <div class="add-margin">Data Method:  <strong>[[method]]</strong></div>
+      <div class="add-margin">Data URL:  <strong>[[url]]</strong></div>
+
+      <div class="add-margin"><a href="#" on-tap="open">Click to Open</a></div>
+
+      <div class="add-margin"><strong>Tag Manager Functions</strong></div>
+
+      <div class="add-margin"><a href="#" on-tap="func01">setEntityTag('', 'Entity1', 'Type1', [[tag]])</a></div>
+      <div class="add-margin"><a href="#" on-tap="func02">setEntityTag('Positive', 'Entity1', 'Type1', [[tag]])</a></div>
+      <div class="add-margin"><a href="#" on-tap="func03">setEntityTag('Negative', 'Entity1', 'Type1', [[tag]])</a></div>
+      <div class="add-margin"><a href="#" on-tap="func04">setEntityTag('Positive', 'Entity2', 'Type2', [[tag]])</a></div>
+      <div class="add-margin"><a href="#" on-tap="func05">setEntityTag('Negative', 'Entity2', 'Type2', [[tag]])</a></div>
+      <div class="add-margin"><a href="#" on-tap="func06">setExtractionTag('', 'Entity1', 'Type1', 'Field1', 'Extraction1')</a></div>
+      <div class="add-margin"><a href="#" on-tap="func07">setExtractionTag('Positive', 'Entity1', 'Type1', 'Field1', 'Extraction1')</a></div>
+      <div class="add-margin"><a href="#" on-tap="func08">setExtractionTag('Negative', 'Entity1', 'Type1', 'Field1', 'Extraction1')</a></div>
+      <div class="add-margin"><a href="#" on-tap="func09">setExtractionTag('Positive', 'Entity2', 'Type2', 'Field2', 'Extraction2')</a></div>
+      <div class="add-margin"><a href="#" on-tap="func10">setExtractionTag('Negative', 'Entity2', 'Type2', 'Field2', 'Extraction2')</a></div>
+
+      <tag-manager id="tagManager"
+        entity-endpoint="http://localhost:1234/projects/PROJECT/entities/ENTITY_TYPE/ids/ENTITY_ID/tags/TAG"
+        extraction-endpoint="http://localhost:1234/projects/PROJECT/entities/ENTITY_TYPE/ids/ENTITY_ID/extractions/EXTRACTION_FIELD/keys/EXTRACTION_KEY"
+        project="myProject"
+        show="{{show}}"
+        tag="{{tag}}"
+        tag-list="[[tagList]]"
+        tag-manager="{{tagManager}}">
+      </tag-manager>
+    </template>
+  </dom-bind>
+
+  <script>
+    (function(document) {
+      var demo = document.querySelector('dom-bind');
+      demo.tagList = ['One', 'Two', 'Three'];
+      demo.tag = 'One';
+      demo.open = function() {
+        demo.$.tagManager.openDialog();
+      };
+      demo.updateData = function() {
+        demo.set('body', JSON.stringify(demo.$.tagManager._data.body));
+        demo.set('method', demo.$.tagManager._data.method);
+        demo.set('url', demo.$.tagManager._data.url);
+      };
+      demo.func01 = function() {
+        demo.tagManager.setEntityTag('', 'Entity1', 'Type1', demo.tag);
+        demo.updateData();
+      };
+      demo.func02 = function() {
+        demo.tagManager.setEntityTag('Positive', 'Entity1', 'Type1', demo.tag);
+        demo.updateData();
+      };
+      demo.func03 = function() {
+        demo.tagManager.setEntityTag('Negative', 'Entity1', 'Type1', demo.tag);
+        demo.updateData();
+      };
+      demo.func04 = function() {
+        demo.tagManager.setEntityTag('Positive', 'Entity2', 'Type2', demo.tag);
+        demo.updateData();
+      };
+      demo.func05 = function() {
+        demo.tagManager.setEntityTag('Negative', 'Entity2', 'Type2', demo.tag);
+        demo.updateData();
+      };
+      demo.func06 = function() {
+        demo.tagManager.setEntityTag('', 'Entity1', 'Type1', 'Field1', 'Extraction1');
+        demo.updateData();
+      };
+      demo.func07 = function() {
+        demo.tagManager.setEntityTag('Positive', 'Entity1', 'Type1', 'Field1', 'Extraction1');
+        demo.updateData();
+      };
+      demo.func08 = function() {
+        demo.tagManager.setEntityTag('Negative', 'Entity1', 'Type1', 'Field1', 'Extraction1');
+        demo.updateData();
+      };
+      demo.func09 = function() {
+        demo.tagManager.setEntityTag('Positive', 'Entity2', 'Type2', 'Field2', 'Extraction2');
+        demo.updateData();
+      };
+      demo.func10 = function() {
+        demo.tagManager.setEntityTag('Negative', 'Entity2', 'Type2', 'Field2', 'Extraction2');
+        demo.updateData();
+      };
+    })(document);
+  </script>
 </body>
 </html>
