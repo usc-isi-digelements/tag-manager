@@ -58,6 +58,10 @@ A Polymer Element that manages tags saved using ajax requests.
         display: block;
       }
 
+      .pointer > * {
+        cursor: pointer;
+      }
+
       .checkbox {
         height: 20px;
         width: 20px;
@@ -69,9 +73,13 @@ A Polymer Element that manages tags saved using ajax requests.
         }
       }
 
-      .pointer,
-      paper-listbox paper-item {
-        cursor: pointer;
+      paper-item {
+        --paper-item-min-height: 30px;
+        --paper-item: {
+          cursor: pointer;
+          padding: 0 10px;
+          white-space: nowrap;
+        }
       }
     </style>
 
@@ -97,9 +105,9 @@ A Polymer Element that manages tags saved using ajax requests.
     </iron-ajax>
 
     <styled-dialog id="tagsDialog" header="Tag List">
-      <div class="layout horizontal pointer" title="Toggle Show Training Tags" on-tap="_toggleShowTags">
-        <iron-icon class="checkbox styled-dialog-tall styled-dialog-right-space" icon$="[[_getCheckboxIcon(show)]]"></iron-icon>
-        <span class="styled-dialog-text styled-dialog-tall">Show Training Tags</span>
+      <div class="layout horizontal center pointer styled-dialog-tall">
+        <iron-icon class="checkbox styled-dialog-right-space" icon$="[[_getCheckboxIcon(show)]]" title="Toggle Show Training Tags" on-tap="_toggleShowTags"></iron-icon>
+        <span class="styled-dialog-text" on-tap="_toggleShowTags">Show Training Tags</span>
       </div>
 
       <div class="layout horizontal">
