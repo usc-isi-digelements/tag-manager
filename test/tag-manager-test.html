@@ -131,33 +131,36 @@ limitations under the License.
         expect(element.$$('styled-dialog').opened).to.be.false;
       });
 
-      test('does not have a paper-dropdown-menu, paper-listbox, or paper-item if tagList is empty', function() {
-        expect(element.$$('paper-dropdown-menu')).to.not.exist;
-        expect(element.$$('paper-listbox')).to.not.exist;
-        expect(element.$$('paper-item')).to.not.exist;
+      test('does not have a dropdown-menu if tagList is empty', function() {
+        expect(element.$$('dropdown-menu')).to.not.exist;
       });
 
-      test('does have a paper-dropdown-menu, paper-listbox, and paper-item if tagList is not empty', function(done) {
-        element.tagList = ['a', 'b', 'c', 'd'];
+      test('does have a dropdown-menu if tagList is not empty', function(done) {
+        element.tagList = [{
+          value: 'a'
+        }, {
+          value: 'b'
+        }, {
+          value: 'c'
+        }, {
+          value: 'd'
+        }];
         element.tag = 'a';
         flush(function() {
-          expect(element.$$('paper-dropdown-menu')).to.exist;
-          expect(element.$$('paper-listbox')).to.exist;
-          expect(element.$$('paper-listbox').slot).to.equal('dropdown-content');
-          expect(element.$$('paper-listbox').selected).to.equal('a');
-          var item = Polymer.dom(element.root).querySelectorAll('paper-item');
-          expect(item[0]).to.exist;
-          expect(item[0].id).to.equal('a');
-          expect(item[0].value).to.equal('a');
-          expect(item[1]).to.exist;
-          expect(item[1].id).to.equal('b');
-          expect(item[1].value).to.equal('b');
-          expect(item[2]).to.exist;
-          expect(item[2].id).to.equal('c');
-          expect(item[2].value).to.equal('c');
-          expect(item[3]).to.exist;
-          expect(item[3].id).to.equal('d');
-          expect(item[3].value).to.equal('d');
+          expect(element.$$('dropdown-menu')).to.exist;
+          expect(element.$$('dropdown-menu').label).to.equal('Tag');
+          expect(element.$$('dropdown-menu').noLabelFloat).to.be.true;
+          expect(element.$$('dropdown-menu').selected).to.equal('a');
+          expect(element.$$('dropdown-menu').titleProperty).to.equal('value');
+          expect(element.$$('dropdown-menu').data).to.deep.equal([{
+            value: 'a'
+          }, {
+            value: 'b'
+          }, {
+            value: 'c'
+          }, {
+            value: 'd'
+          }]);
           done();
         });
       });
@@ -492,7 +495,15 @@ limitations under the License.
           c: [],
           d: {}
         });
-        expect(element.tagList).to.deep.equal(['a', 'b', 'c', 'd']);
+        expect(element.tagList).to.deep.equal([{
+          value: 'a'
+        }, {
+          value: 'b'
+        }, {
+          value: 'c'
+        }, {
+          value: 'd'
+        }]);
       });
 
       test('setting _listResponse does set tagList', function() {
@@ -502,7 +513,15 @@ limitations under the License.
           y: [],
           z: {}
         };
-        expect(element.tagList).to.deep.equal(['w', 'x', 'y', 'z']);
+        expect(element.tagList).to.deep.equal([{
+          value: 'w'
+        }, {
+          value: 'x'
+        }, {
+          value: 'y'
+        }, {
+          value: 'z'
+        }]);
       });
 
       test('openDialog does open the dialog', function(done) {

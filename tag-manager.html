@@ -15,15 +15,12 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../dropdown-menu/dropdown-menu.html">
+<link rel="import" href="../icon-button/icon-button.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../lodash-import/lodash.html">
 <link rel="import" href="../neon-animation/web-animations.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../styled-dialog/styled-dialog.html">
 <link rel="import" href="../styled-dialog/styled-dialog-styles.html">
 
@@ -61,26 +58,6 @@ A Polymer Element that manages tags saved using ajax requests.
       .pointer > * {
         cursor: pointer;
       }
-
-      .checkbox {
-        height: 20px;
-        width: 20px;
-      }
-
-      paper-listbox {
-        --paper-listbox: {
-          padding: 0;
-        }
-      }
-
-      paper-item {
-        --paper-item-min-height: 30px;
-        --paper-item: {
-          cursor: pointer;
-          padding: 0 10px;
-          white-space: nowrap;
-        }
-      }
     </style>
 
     <iron-ajax
@@ -106,7 +83,15 @@ A Polymer Element that manages tags saved using ajax requests.
 
     <styled-dialog id="tagsDialog" header="Tag List">
       <div class="layout horizontal center pointer styled-dialog-tall">
-        <iron-icon class="checkbox styled-dialog-right-space" icon$="[[_getCheckboxIcon(show)]]" title="Toggle Show Training Tags" on-tap="_toggleShowTags"></iron-icon>
+        <icon-button
+          active="[[show]]"
+          bigger
+          class="checkbox styled-dialog-right-space"
+          icon="[[_getCheckboxIcon(show)]]"
+          padded
+          title-tooltip="Toggle Show Training Tags"
+          on-tap="_toggleShowTags">
+        </icon-button>
         <span class="styled-dialog-text" on-tap="_toggleShowTags">Show Training Tags</span>
       </div>
 
@@ -116,13 +101,13 @@ A Polymer Element that manages tags saved using ajax requests.
         </template>
         <template is="dom-if" if="[[tagList.length]]">
           <span class="styled-dialog-name styled-dialog-tall styled-dialog-right-space">Training Focus Tag:</span>
-          <paper-dropdown-menu label="Tag" no-label-float>
-            <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{tag}}">
-              <template is="dom-repeat" items="[[tagList]]">
-                <paper-item id$="[[item]]" value="[[item]]">[[item]]</paper-item>
-              </template>
-            </paper-listbox>
-          </paper-dropdown-menu>
+          <dropdown-menu
+            data="[[tagList]]"
+            label="Tag"
+            no-label-float
+            selected="{{tag}}"
+            title-property="value">
+          </dropdown-menu>
         </template>
       </div>
     </styled-dialog>
@@ -578,7 +563,9 @@ A Polymer Element that manages tags saved using ajax requests.
         var list = [];
         if(response) {
           _.keys(response).forEach(function(key) {
-            list.push(key);
+            list.push({
+              value: key
+            });
           });
         }
         this.set('tagList', list);

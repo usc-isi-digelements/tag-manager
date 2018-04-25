@@ -71,7 +71,13 @@ limitations under the License.
   <script>
     (function(document) {
       var demo = document.querySelector('dom-bind');
-      demo.tagList = ['One', 'Two', 'Three'];
+      demo.tagList = [{
+        value: 'One',
+      }, {
+        value: 'Two',
+      }, {
+        value: 'Three'
+      }];
       demo.tag = 'One';
       demo.open = function() {
         demo.$.tagManager.openDialog();
