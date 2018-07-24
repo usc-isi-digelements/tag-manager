@@ -1,27 +1,22 @@
 {
   "name": "tag-manager",
-  "description": "A Polymer Element that manages tags saved using ajax requests.",
-  "version": "2.2.0",
+  "description":
+    "A Polymer Element that manages tags saved using ajax requests.",
+  "version": "2.2.1",
   "authors": ["Next Century Corporation"],
   "license": "Apache-2.0",
-  "keywords": [
-    "web-component",
-    "polymer"
-  ],
+  "keywords": ["web-component", "polymer"],
   "main": "tag-manager.html",
   "homepage": "https://github.com/usc-isi-digelements/tag-manager/",
-  "ignore": [
-    "/.*",
-    "/test/"
-  ],
+  "ignore": ["/.*", "/test/"],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.2",
-    "dropdown-menu": "usc-isi-digelements/dropdown-menu#2.0.1",
-    "icon-button": "usc-isi-digelements/icon-button#2.0.1",
+    "dropdown-menu": "usc-isi-digelements/dropdown-menu#^2.0.1",
+    "icon-button": "usc-isi-digelements/icon-button#^2.0.2",
     "iron-ajax": "PolymerElements/iron-ajax#^2.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
-    "lodash-import": "usc-isi-digelements/lodash-import#~1.0.1",
-    "styled-dialog": "usc-isi-digelements/styled-dialog#2.2.0",
+    "lodash-import": "usc-isi-digelements/lodash-import#^1.0.1",
+    "styled-dialog": "usc-isi-digelements/styled-dialog#^2.2.2",
     "web-animations-js": "web-animations/web-animations-js#^2.2"
   },
   "devDependencies": {
